@@ -1,4 +1,4 @@
-import {KNNImageClassifier} from 'deeplearn-knn-image-classifier';
+import { KNNImageClassifier } from 'deeplearn-knn-image-classifier';
 import * as dl from 'deeplearn';
 import CountDownTimer from './countdown';
 
@@ -103,19 +103,19 @@ class Main {
     this.hiddenCanvas.height = IMAGE_SIZE;
 
     // Setup webcam
-    navigator.mediaDevices.getUserMedia({video: true, audio: false})
-    .then((stream) => {
-      this.video.srcObject = stream;
-      this.video.width = IMAGE_SIZE;
-      this.video.height = IMAGE_SIZE;
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        this.video.srcObject = stream;
+        this.video.width = IMAGE_SIZE;
+        this.video.height = IMAGE_SIZE;
 
-      this.video.addEventListener('playing', ()=> this.videoPlaying = true);
-      this.video.addEventListener('paused', ()=> this.videoPlaying = false);
-    });
+        this.video.addEventListener('playing', () => this.videoPlaying = true);
+        this.video.addEventListener('paused', () => this.videoPlaying = false);
+      });
 
     // Load knn model
     this.knn.load()
-    .then(() => this.start());
+      .then(() => this.start());
   }
 
   /**
@@ -129,9 +129,9 @@ class Main {
     this.startButton.disabled = true;
     this.countDownTimer = new CountDownTimer(5000, 20);
     this.countDownTimer.addTickFn((msLeft) => {
-      this.gameStatus.innerText = (msLeft/1000).toFixed(1) +
-      ' seconds left. Prepare your move!';
-      let computerMove = Math.floor(Math.random()*3);
+      this.gameStatus.innerText = (msLeft / 1000).toFixed(1) +
+        ' seconds left. Prepare your move!';
+      let computerMove = Math.floor(Math.random() * 3);
       for (let i = 0; i < 3; i++) {
         this.gestureCpuImages[i].hidden = (i !== computerMove);
       }
@@ -147,17 +147,17 @@ class Main {
    */
   resolveGame() {
     this.gaming = false;
-    let computerMove = Math.floor(Math.random()*3);
+    let computerMove = Math.floor(Math.random() * 3);
     let result = winnerMatrix[computerMove][this.currentMove];
     switch (result) {
       case -1:
-      this.gameStatus.innerText = 'You lose. Try again!';
-      break;
+        this.gameStatus.innerText = 'You lose. Try again!';
+        break;
       case 0:
-      this.gameStatus.innerText = `It's a draw! Try again.`;
-      break;
+        this.gameStatus.innerText = `It's a draw! Try again.`;
+        break;
       case 1:
-      this.gameStatus.innerText = 'You win. Yay!';
+        this.gameStatus.innerText = 'You win. Yay!';
     }
     for (let i = 0; i < 3; i++) {
       this.gestureCpuImages[i].hidden = (i !== computerMove);
@@ -200,39 +200,39 @@ class Main {
       const exampleCount = this.knn.getClassExampleCount();
       if (Math.max(...exampleCount) > 0) {
         this.knn.predictClass(image)
-        .then((res)=>{
-          this.currentMove = res.classIndex;
-          for (let i=0; i<NUM_CLASSES; i++) {
-            // Make the predicted class bold
-            if (res.classIndex == i) {
-              this.infoTexts[i].style.fontWeight = 'bold';
-            } else {
-              this.infoTexts[i].style.fontWeight = 'normal';
-            }
-
-            // Update img if in game
-            if (this.gaming) {
-              this.youImg.hidden = true;
+          .then((res) => {
+            this.currentMove = res.classIndex;
+            for (let i = 0; i < NUM_CLASSES; i++) {
+              // Make the predicted class bold
               if (res.classIndex == i) {
-                this.gestureYouImages[i].hidden = false;
+                this.infoTexts[i].style.fontWeight = 'bold';
               } else {
-                this.gestureYouImages[i].hidden = true;
+                this.infoTexts[i].style.fontWeight = 'normal';
+              }
+
+              // Update img if in game
+              if (this.gaming) {
+                this.youImg.hidden = true;
+                if (res.classIndex == i) {
+                  this.gestureYouImages[i].hidden = false;
+                } else {
+                  this.gestureYouImages[i].hidden = true;
+                }
+              }
+
+              // Update info text
+              if (exampleCount[i] > 0) {
+                this.infoTexts[i].innerText =
+                  ` ${exampleCount[i]} examples - ${res.confidences[i] * 100}%`;
               }
             }
-
-            // Update info text
-            if (exampleCount[i] > 0) {
-              this.infoTexts[i].innerText =
-              ` ${exampleCount[i]} examples - ${res.confidences[i]*100}%`;
+            if (!this.firstExampleTrained) {
+              this.firstExampleTrained = true;
+              this.startButton.disabled = false;
             }
-          }
-          if (!this.firstExampleTrained) {
-            this.firstExampleTrained = true;
-            this.startButton.disabled = false;
-          }
-        })
-        // Dispose image when done
-        .then(()=> image.dispose());
+          })
+          // Dispose image when done
+          .then(() => image.dispose());
       } else {
         image.dispose();
       }
